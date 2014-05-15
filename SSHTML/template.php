@@ -4,7 +4,6 @@
  * Date: 25.04.14
  * Time: 17:23
  */
-var_dump(123);die;
 
 require_once( 'getAD.php' );
 //$item = $result['items'][0];

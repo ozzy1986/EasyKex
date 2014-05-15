@@ -3,6 +3,8 @@ require '../commLib.php';
 
 $id = (int)$_GET["id"];
 
+var_dump(123);die;
+
 $GLOBALS["defaultTemplate"] = array(
     array(
         "width" => 300,
