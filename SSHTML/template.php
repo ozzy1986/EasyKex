@@ -6,7 +6,7 @@
  */
 error_reporting(E_ALL);
 var_dump(124);
-require_once( 'getAD.php' );
+require_once( __DIR__ .'/getAD.php' );
 var_dump(125);die;
 //$item = $result['items'][0];
 // 4 testing
