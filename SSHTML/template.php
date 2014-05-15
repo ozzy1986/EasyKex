@@ -9,7 +9,7 @@ require_once( 'getAd.php' );
 //$item = $result['items'][0];
 // 4 testing
 $item['type'] = 'video';
-$item['media'][0]['url'] = "https://s3.amazonaws.com/ignitevideo_development/raw/29/upload_2014-04-10_22-42-36.mp4";
+$item['media'][0]['url'] = "http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test4_Talkingheadclipped_mp4_480x320.mp4";
 $item['secondTitle'] = "secondTitle";
 //var_dump($item);die;
 //$item['banner'] = "https://s3-us-west-1.amazonaws.com/ignitevideofuel-dev/demo/north+face/logo.png";
