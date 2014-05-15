@@ -4,7 +4,7 @@
  * Date: 25.04.14
  * Time: 17:23
  */
-
+var_dump(124);
 require_once( 'getAD.php' );
 //$item = $result['items'][0];
 // 4 testing

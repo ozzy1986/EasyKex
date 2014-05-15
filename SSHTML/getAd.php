@@ -1,5 +1,4 @@
 <?php
-var_dump(123);die;
 
 require '../commLib.php';
 
