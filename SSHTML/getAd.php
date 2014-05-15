@@ -1,6 +1,4 @@
 <?php
-var_dump(123);die;
-
 require '../commLib.php';
 
 $id = (int)$_GET["id"];
