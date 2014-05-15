@@ -4,10 +4,11 @@
  * Date: 25.04.14
  * Time: 17:23
  */
+var_dump(123);die;
+
 require_once( 'getAD.php' );
 //$item = $result['items'][0];
 // 4 testing
-var_dump(123);die;
 $item['type'] = 'video';
 $item['media'][0]['url'] = "https://s3.amazonaws.com/ignitevideo_development/raw/29/upload_2014-04-10_22-42-36.mp4";
 $item['secondTitle'] = "secondTitle";
