@@ -4,11 +4,8 @@
  * Date: 25.04.14
  * Time: 17:23
  */
-error_reporting(E_ALL);
-var_dump(122);
-var_dump(__DIR__ .'/getAD.php');
-require_once( __DIR__ .'/getAD.php' );
-var_dump(125);die;
+
+require_once( 'getAd.php' );
 //$item = $result['items'][0];
 // 4 testing
 $item['type'] = 'video';
