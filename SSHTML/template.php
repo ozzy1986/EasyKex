@@ -5,7 +5,8 @@
  * Time: 17:23
  */
 error_reporting(E_ALL);
-var_dump(124);
+var_dump(122);
+var_dump(__DIR__ .'/getAD.php');
 require_once( __DIR__ .'/getAD.php' );
 var_dump(125);die;
 //$item = $result['items'][0];
