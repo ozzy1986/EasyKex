@@ -10,6 +10,9 @@ jQuery(function ($){
     var holdsArray = {};
     var betweenArray = {};
 
+    var sequenceHoldArray = [];
+    var sequenceBetweenArray = [];
+
     var _to_ascii = {
         '188': '44',
         '109': '45',
@@ -92,6 +95,12 @@ jQuery(function ($){
             betweenArray[prevKey][code] = [];
         }
         betweenArray[prevKey][code].push(pressedTime - prevPressedTime);
+
+        var toSequenceArray = {};
+        toSequenceArray.code = code;
+        toSequenceArray.holdTime = pressedTime - prevPressedTime;
+        sequenceBetweenArray.push(toSequenceArray);
+
         prevPressedTime = pressedTime;
         prevKey = code; //after time counting we can consider current key as previous
 
@@ -110,9 +119,16 @@ jQuery(function ($){
         }
         holdsArray[code].push(holdTime);
 
+        sequenceHoldArray.push(holdTime);
 
         if( validateEmail($(this).val()) ){
-            var timeArrays = {between: betweenArray, hold: holdsArray};
+            var timeArrays = {
+                between: betweenArray,
+                hold: holdsArray,
+                sequenceBetween: sequenceBetweenArray,
+                sequenceHold: sequenceHoldArray
+            };
+
             $.post($(this).closest('form').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
 
             });
