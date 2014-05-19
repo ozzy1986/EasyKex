@@ -3,21 +3,19 @@ class db {
 
     private $db;
 
-    private $db_access = array(
-        'host' => 'localhost',
-        'user' => 'easykex',
-        'password' => '1qwerty123',
-        'db' => 'easykex'
-    );
+    private $db_access;
 
 
     public function __construct() {
+        include 'db_settings.php';
+        $this->db_access = $db_access;
+
         $this->db = new mysqli($this->db_access['host'], $this->db_access['user'], $this->db_access['password'], $this->db_access['db']);
 
         if ($this->db->connect_errno > 0) {
             die('Unable to connect to database [' . $this->db->connect_error . ']');
         }
-    echo 'Okay';
+
         return $this->db;
 
     }

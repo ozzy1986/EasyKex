@@ -16,6 +16,8 @@ jQuery(function ($){
 
     var codeArray = [];
 
+    var timeoutSend; // to set timeout for sending ajax request
+
     var _to_ascii = {
         '188': '44',
         '109': '45',
@@ -81,6 +83,28 @@ jQuery(function ($){
         return re.test(email);
     }
 
+    function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray) {
+        console.log('sendEmail starts...');
+        if (validateEmail(email)) {
+            console.log('Sending email to ajax');
+            // exclude first senseless element from sequenceBetween
+            sequenceBetweenArray.shift();
+
+            var timeArrays = {
+                //between: betweenArray,
+                //hold: holdsArray,
+                sequenceBetween: sequenceBetweenArray,
+                sequenceHold: sequenceHoldArray,
+                codeArray: codeArray,
+                text: email
+            };
+
+            $.post($('#loginForm').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
+                $('#result').html(data);
+            });
+        }
+    }
+
     $userEmail.keydown(function (e){
         var code = getAsciiCode(e.which, e.shiftKey);
         if( code == 16 ){
@@ -116,6 +140,8 @@ jQuery(function ($){
 
 
     }).keyup(function (e){
+        clearTimeout(timeoutSend); // reset timeout everytime key is pressed
+
         var code = getAsciiCode(e.which, e.shiftKey);
         if( code == 16 ){
             return; //don't count shift presses
@@ -131,6 +157,12 @@ jQuery(function ($){
 
         sequenceHoldArray.push(holdTime);
 
+        var email = $(this).val();
+        timeoutSend = setTimeout(function() {
+            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray);
+        }, 2000);
+
+        /*
         if( validateEmail($(this).val()) ){
             var email = $(this).val();
 
@@ -150,6 +182,7 @@ jQuery(function ($){
                 $('#result').html(data);
             });
         }
-
+        */
     });
+
 });
