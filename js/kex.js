@@ -83,16 +83,14 @@ jQuery(function ($){
         return re.test(email);
     }
 
-    function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray) {
-        console.log('sendEmail starts...');
+    function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray) {
         if (validateEmail(email)) {
-            console.log('Sending email to ajax');
             // exclude first senseless element from sequenceBetween
             sequenceBetweenArray.shift();
 
             var timeArrays = {
-                //between: betweenArray,
-                //hold: holdsArray,
+                between: betweenArray,
+                hold: holdsArray,
                 sequenceBetween: sequenceBetweenArray,
                 sequenceHold: sequenceHoldArray,
                 codeArray: codeArray,
@@ -107,8 +105,13 @@ jQuery(function ($){
 
     $userEmail.keydown(function (e){
         var code = getAsciiCode(e.which, e.shiftKey);
-        if( code == 16 ){
+        console.log('code pressed', code);
+        if (code == 16) {
             return; //don't count shift presses
+        } else if (code == 13) {
+            var email = $(this).val();
+            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray);
+            return;
         }
 
         var pressedTime = new Date().getTime();
@@ -122,11 +125,6 @@ jQuery(function ($){
             betweenArray[prevKey][code] = [];
         }
         betweenArray[prevKey][code].push(pressedTime - prevPressedTime);
-
-        /*var toSequenceArray = {};
-        toSequenceArray.code = code;
-        toSequenceArray.holdTime = pressedTime - prevPressedTime;
-        sequenceBetweenArray.push(toSequenceArray);*/
 
         // interval is difference in time between two keys being pressed down
         var interval = pressedTime - prevPressedTime;
@@ -143,7 +141,7 @@ jQuery(function ($){
         clearTimeout(timeoutSend); // reset timeout everytime key is pressed
 
         var code = getAsciiCode(e.which, e.shiftKey);
-        if( code == 16 ){
+        if (code == 16 || code == 13) {
             return; //don't count shift presses
         }
         currentKey = code;
@@ -159,30 +157,8 @@ jQuery(function ($){
 
         var email = $(this).val();
         timeoutSend = setTimeout(function() {
-            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray);
+            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray);
         }, 2000);
-
-        /*
-        if( validateEmail($(this).val()) ){
-            var email = $(this).val();
-
-            // exclude first senseless element from sequenceBetween
-            sequenceBetweenArray.shift();
-
-            var timeArrays = {
-                //between: betweenArray,
-                //hold: holdsArray,
-                sequenceBetween: sequenceBetweenArray,
-                sequenceHold: sequenceHoldArray,
-                codeArray: codeArray,
-                text: email
-            };
-
-            $.post($(this).closest('form').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
-                $('#result').html(data);
-            });
-        }
-        */
     });
 
 });

@@ -11,10 +11,12 @@
 
 <body>
 
-<form action="/kex.php" method="post" id="loginForm">
-    <label for="userEmail">Input your email</label>
-    <input type="email" id="userEmail" name="email" autocomplete="off"/>
-</form>
+<form action="/kex.php" method="post" id="loginForm"></form>
+
+
+
+<label for="userEmail">Input your email</label>
+<input type="email" id="userEmail" name="email" autocomplete="off"/>
 
 <div id="result">
 
