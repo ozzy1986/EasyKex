@@ -1,8 +1,8 @@
 <?php
 $db_access = array(
     'host' => 'localhost',
-    'user' => 'kexuser',
-    'password' => 'easypassword',
+    'user' => 'easykex',
+    'password' => '1qwerty123',
     'db' => 'easykex'
 );
 ?>
