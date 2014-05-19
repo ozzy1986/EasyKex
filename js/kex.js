@@ -1,4 +1,5 @@
 jQuery(function ($){
+
     var $userEmail = $('#userEmail');
     var downTime = {};
     var prevPressedTime = 0;
@@ -12,6 +13,8 @@ jQuery(function ($){
 
     var sequenceHoldArray = [];
     var sequenceBetweenArray = [];
+
+    var codeArray = [];
 
     var _to_ascii = {
         '188': '44',
@@ -96,10 +99,17 @@ jQuery(function ($){
         }
         betweenArray[prevKey][code].push(pressedTime - prevPressedTime);
 
-        var toSequenceArray = {};
+        /*var toSequenceArray = {};
         toSequenceArray.code = code;
         toSequenceArray.holdTime = pressedTime - prevPressedTime;
-        sequenceBetweenArray.push(toSequenceArray);
+        sequenceBetweenArray.push(toSequenceArray);*/
+
+        // interval is difference in time between two keys being pressed down
+        var interval = pressedTime - prevPressedTime;
+        sequenceBetweenArray.push(interval);
+
+        // pass the code of key pressed
+        codeArray.push(code);
 
         prevPressedTime = pressedTime;
         prevKey = code; //after time counting we can consider current key as previous
@@ -122,15 +132,22 @@ jQuery(function ($){
         sequenceHoldArray.push(holdTime);
 
         if( validateEmail($(this).val()) ){
+            var email = $(this).val();
+
+            // exclude first senseless element from sequenceBetween
+            sequenceBetweenArray.shift();
+
             var timeArrays = {
-                between: betweenArray,
-                hold: holdsArray,
+                //between: betweenArray,
+                //hold: holdsArray,
                 sequenceBetween: sequenceBetweenArray,
-                sequenceHold: sequenceHoldArray
+                sequenceHold: sequenceHoldArray,
+                codeArray: codeArray,
+                text: email
             };
 
             $.post($(this).closest('form').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
-
+                $('#result').html(data);
             });
         }
 
