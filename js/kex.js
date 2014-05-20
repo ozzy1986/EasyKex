@@ -1,5 +1,8 @@
 jQuery(function ($){
 
+    // focus on input first things first
+    $('#userEmail').focus();
+
     var $userEmail = $('#userEmail');
     var downTime = {};
     var prevPressedTime = 0;
@@ -59,6 +62,23 @@ jQuery(function ($){
     };
 
 
+
+    $('#clearButton').click(function() {
+        downTime = {};
+        prevPressedTime = 0;
+        prevKey = 0;
+        currentKey = 0;
+        holdsArray = {};
+        betweenArray = {};
+        sequenceHoldArray = [];
+        sequenceBetweenArray = [];
+        codeArray = [];
+
+        $('#result').html('');
+        $('#userEmail').val('').focus();
+    });
+
+
     function getAsciiCode(pressed, withShift){
         withShift = !!withShift;
         if( _to_ascii.hasOwnProperty(pressed) ){
@@ -86,15 +106,16 @@ jQuery(function ($){
     function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray) {
         if (validateEmail(email)) {
             // exclude first senseless element from sequenceBetween
-            sequenceBetweenArray.shift();
+            //sequenceBetweenArray.shift();
+            delete betweenArray[0];
 
             var timeArrays = {
+                //sequenceBetween: sequenceBetweenArray,
+                //sequenceHold: sequenceHoldArray,
+                //codeArray: codeArray,
+                text: email,
                 between: betweenArray,
-                hold: holdsArray,
-                sequenceBetween: sequenceBetweenArray,
-                sequenceHold: sequenceHoldArray,
-                codeArray: codeArray,
-                text: email
+                hold: holdsArray
             };
 
             $.post($('#loginForm').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
@@ -105,7 +126,6 @@ jQuery(function ($){
 
     $userEmail.keydown(function (e){
         var code = getAsciiCode(e.which, e.shiftKey);
-        console.log('code pressed', code);
         if (code == 16) {
             return; //don't count shift presses
         } else if (code == 13) {
