@@ -31,8 +31,60 @@ if (!empty($_POST['timeArrays'])) {
         $base_data = json_decode($base_data['signature_data'] ,true);
 
         // print out both data sets
-        echo '<div style="float: left;"><pre>'; print_r($base_data); echo '</pre></div>';
-        echo '<span style="padding: 0 30px 40px; float: left;"><pre>'; print_r($data); echo '</pre></span>';
+        //echo '<div style="float: left;"><pre>'; print_r($base_data); echo '</pre></div>';
+        //echo '<span style="padding: 0 30px 40px; float: left;"><pre>'; print_r($data); echo '</pre></span>';
+
+
+        // let's calculate arrhythmia of typing speed
+        $pause_max = max($data['sequenceBetween']);
+        $m_pause = array_sum($data['sequenceBetween']) / ($pause_max * count($data['sequenceBetween']));
+        $temp = 0;
+        foreach($data['sequenceBetween'] as $pause) {
+            $temp += pow($pause/$pause_max - $m_pause, 2);
+        }
+        $pause_arrhythmia = sqrt($temp/(count($data['sequenceBetween']) - 1));
+        echo '<br>Arrhythmia of typing speed is '.$pause_arrhythmia.'<br>';
+
+
+        // let's calculate arrhythmia of holding keys down
+        $press_max = max($data['sequenceHold']);
+        $m_press = array_sum($data['sequenceHold']) / ($press_max * count($data['sequenceHold']));
+        $temp = 0;
+        foreach($data['sequenceHold'] as $press) {
+            $temp += pow($press/$press_max - $m_press, 2);
+        }
+        $press_arrhythmia = sqrt($temp/(count($data['sequenceHold']) - 1));
+        echo '<br>Arrhythmia of pressing keys is '.$press_arrhythmia.'<br>';
+
+
+        // typing speed
+        $speed = 900*$data['totalTime']/60000;
+        echo '<br>Speed = '.$speed.'<br>';
+
+        // overlapping
+        $overlap_total = array_sum($data['overlapTime']);
+        $overlap_max = max($data['overlapTime']);
+        $overlap_average = $overlap_total / (count($data['overlapTime']) * $overlap_max);
+        $temp = 0;
+        foreach($data['overlapTime'] as $term) {
+            $temp += pow($term/$overlap_max - $overlap_average, 2);
+        }
+        $overlap_deviation = sqrt($temp / (count($data['overlapTime']) - 1));
+
+
+        // normalized chars
+        foreach($data['codeArray'] as $char) {
+            $chars_norm[] = ($char - 32) / 223;
+        }
+
+
+        // Vector
+        $vector = array_merge(
+            $data['sequenceHold'], $data['sequenceBetween'], $chars_norm,
+            array($m_pause, $pause_arrhythmia, $m_press, $press_arrhythmia, $speed, $overlap_average, $overlap_deviation)
+        );
+        $vector_length = 3 * (count($data['codeArray']) - 2);
+
 
 
         // let's compare by walking through the base array and compare each element with the incoming one

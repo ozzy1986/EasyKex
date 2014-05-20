@@ -3,6 +3,13 @@ jQuery(function ($){
     // focus on input first things first
     $('#userEmail').focus();
 
+    // forbid pasting to input
+    $('#userEmail').on('paste drop', function() {
+        return false;
+    });
+
+
+
     var $userEmail = $('#userEmail');
     var downTime = {};
     var prevPressedTime = 0;
@@ -18,6 +25,13 @@ jQuery(function ($){
     var sequenceBetweenArray = [];
 
     var codeArray = [];
+
+    var totalTime = 0;
+    var startTime = 0;
+
+    var keyIsPressed = false;
+    var overlapTime = [];
+    var overlapTimeTemp = 0;
 
     var timeoutSend; // to set timeout for sending ajax request
 
@@ -103,19 +117,21 @@ jQuery(function ($){
         return re.test(email);
     }
 
-    function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray) {
+    function sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray, totalTime, overlapTime) {
         if (validateEmail(email)) {
             // exclude first senseless element from sequenceBetween
-            //sequenceBetweenArray.shift();
+            sequenceBetweenArray.shift();
             delete betweenArray[0];
 
             var timeArrays = {
-                //sequenceBetween: sequenceBetweenArray,
-                //sequenceHold: sequenceHoldArray,
-                //codeArray: codeArray,
+                sequenceBetween: sequenceBetweenArray,
+                sequenceHold: sequenceHoldArray,
+                codeArray: codeArray,
                 text: email,
                 between: betweenArray,
-                hold: holdsArray
+                hold: holdsArray,
+                totalTime: totalTime,
+                overlapTime: overlapTime
             };
 
             $.post($('#loginForm').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
@@ -130,8 +146,18 @@ jQuery(function ($){
             return; //don't count shift presses
         } else if (code == 13) {
             var email = $(this).val();
-            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray);
+            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray, totalTime, overlapTime);
             return;
+        }
+
+        if (keyIsPressed) {
+            overlapTimeTemp = new Date().getTime();
+        }
+        keyIsPressed = true;
+
+        if (prevKey == 0) {
+            // if first time key is pressed then start countdown
+            startTime = new Date().getTime();
         }
 
         var pressedTime = new Date().getTime();
@@ -161,9 +187,20 @@ jQuery(function ($){
         clearTimeout(timeoutSend); // reset timeout everytime key is pressed
 
         var code = getAsciiCode(e.which, e.shiftKey);
-        if (code == 16 || code == 13) {
+        if (code == 16) {
             return; //don't count shift presses
+        } else if (code == 13) {
+            totalTime = (new Date().getTime() - startTime);
+            return;
         }
+        totalTime = (new Date().getTime() - startTime);
+
+        if (overlapTimeTemp > 0) {
+            overlapTime.push((new Date().getTime() - overlapTimeTemp));
+        }
+        keyIsPressed = false;
+        overlapTimeTemp = 0;
+
         currentKey = code;
 
         //adding time of key holding
@@ -177,7 +214,7 @@ jQuery(function ($){
 
         var email = $(this).val();
         timeoutSend = setTimeout(function() {
-            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray);
+            sendEmail(email, sequenceBetweenArray, sequenceHoldArray, codeArray, betweenArray, holdsArray, totalTime, overlapTime);
         }, 2000);
     });
 

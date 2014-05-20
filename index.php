@@ -26,7 +26,7 @@
     <div class="form" style="margin-top: 30px;">
         <label for="userEmail">Input your email</label>
         <input type="email" id="userEmail" name="email" autocomplete="off"/>
-        <button id="clearButton">Clear</button>
+        <br/><br/><button id="clearButton" style="font-weight: 700;" title="Reload"><img src="/img/reload.png" title="Reload" alt="Reload" width="30" height="26" /></button>
     </div>
 
     <div id="result"></div>
