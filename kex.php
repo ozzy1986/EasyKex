@@ -136,6 +136,10 @@ if (!empty($_POST['timeArrays'])) {
         $total_diff = ($average_between_diff + $average_hold_diff) / 2;
         echo '<br>Total average difference = '.$total_diff.'%<br>';
         if ($total_diff <= $diff_limit and $mismatch_count <= $mismatch_limit) {
+            // add keyboard data to this user
+            $sql_add_entry = "INSERT INTO `entries` (`user_id`, `signature_data`, `time_attempt`) VALUES ('".$user['id']."', '".$_POST['timeArrays']."', '".date('Y-m-d h:i:s')."')";
+            $db->query($sql_add_entry);
+
             echo '<br><div style="font-size: 18px; color: darkgreen">You kinda passed the authentication</div>';
         } else {
             echo '<br><div style="font-size: 18px; color: darkred">You kinda failed the authentication</div>';

@@ -7,6 +7,26 @@ jQuery(function ($){
     $('#userEmail').on('paste drop', function() {
         return false;
     });
+    // forbid backspace, delete, arrow left and arrow right
+    $('#userEmail').on('keydown', function(e) {
+        var evt = e || window.event;
+        if (evt) {
+            var keyCode = evt.charCode || evt.keyCode;
+            if (keyCode === 8 || keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 || keyCode === 46) {
+                if (evt.preventDefault) {
+                    evt.preventDefault();
+                } else {
+                    evt.returnValue = false;
+                }
+            }
+        }
+    });
+    // forbid putting cursor in the middle or beginning of text
+    $('#userEmail').on('click focus', function() {
+        var val = $(this).val(); // store the value of the element
+        $(this).val('').val(val); // clear the value of the element and set that value back.
+    });
+
 
 
 
