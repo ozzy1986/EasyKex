@@ -96,8 +96,10 @@ jQuery(function ($){
     };
 
 
-
-    $('#clearButton').click(function() {
+    function clearAll(clearResult) {
+        if (typeof clearResult === 'undefined') {
+            clearResult = true;
+        }
         downTime = {};
         prevPressedTime = 0;
         prevKey = 0;
@@ -108,8 +110,14 @@ jQuery(function ($){
         sequenceBetweenArray = [];
         codeArray = [];
 
-        $('#result').html('');
         $('#userEmail').val('').focus();
+        if (clearResult) {
+            $('#result').html('');
+        }
+    }
+
+    $('#clearButton').click(function() {
+        clearAll();
     });
 
 
@@ -156,6 +164,10 @@ jQuery(function ($){
 
             $.post($('#loginForm').attr('action'), {timeArrays: JSON.stringify(timeArrays)}, function (data){
                 $('#result').html(data);
+                if (data.substring(0, 12) == '<br>New user') {
+                    // if it was new user then lets clear input
+                    clearAll(false);
+                }
             });
         }
     }
@@ -225,12 +237,14 @@ jQuery(function ($){
 
         //adding time of key holding
         var holdTime = (new Date().getTime() - downTime[code]);
-        if( !holdsArray[code] ){
-            holdsArray[code] = [];
-        }
-        holdsArray[code].push(holdTime);
+        if (holdTime) {
+            if (!holdsArray[code]) {
+                holdsArray[code] = [];
+            }
+            holdsArray[code].push(holdTime);
 
-        sequenceHoldArray.push(holdTime);
+            sequenceHoldArray.push(holdTime);
+        }
 
         var email = $(this).val();
         timeoutSend = setTimeout(function() {

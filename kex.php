@@ -1,6 +1,11 @@
 <?php
 
-include 'db.php';
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+
+require 'data_model.php';
+require 'user_model.php';
+require 'db.php';
 $db = new db;
 
 $diff_limit = 20; // maximum percent of average difference in hold and interval periods
@@ -12,78 +17,69 @@ if (!empty($_POST['timeArrays'])) {
     $between_diff = array();
     $hold_diff = array();
 
-
-    $data = json_decode($_POST['timeArrays'], true);
-    //echo '<pre>'; print_r($data); echo '</pre>';
+    $incoming_data = new Data($_POST['timeArrays']);
 
     // check if such email already exists
-    $sql = "SELECT id FROM users WHERE email = '".$data['text']."' LIMIT 1";
-    $result = $db->query($sql);
-    if ($result->num_rows > 0) {
+    $user = new User;
+    if ($user->getUserDataByEmail($incoming_data->getData('text'))) {
 
         echo '<br>Comparing with existing user...<br>';
 
         // if user found perform check of time data for compatibility
-        $user = $result->fetch_assoc();
-        $sql_previous_data = "SELECT `signature_data` FROM `entries` WHERE `user_id` = '".$user['id']."' LIMIT 1";
-        $result_previous_data = $db->query($sql_previous_data);
-        $base_data = $result_previous_data->fetch_assoc();
-        $base_data = json_decode($base_data['signature_data'] ,true);
+        $base_data = $user->data['Data'];
+        $data = $incoming_data->getData();
 
         // print out both data sets
         //echo '<div style="float: left;"><pre>'; print_r($base_data); echo '</pre></div>';
-        //echo '<span style="padding: 0 30px 40px; float: left;"><pre>'; print_r($data); echo '</pre></span>';
+        //echo '<span style="padding-left: 30px; padding-right: 100px; float: left;"><pre>'; print_r($data); echo '</pre></span>';
 
 
         // let's calculate arrhythmia of typing speed
-        $pause_max = max($data['sequenceBetween']);
-        $m_pause = array_sum($data['sequenceBetween']) / ($pause_max * count($data['sequenceBetween']));
-        $temp = 0;
-        foreach($data['sequenceBetween'] as $pause) {
-            $temp += pow($pause/$pause_max - $m_pause, 2);
-        }
-        $pause_arrhythmia = sqrt($temp/(count($data['sequenceBetween']) - 1));
-        echo '<br>Arrhythmia of typing speed is '.$pause_arrhythmia.'<br>';
+        $pause_arrhythmia = $incoming_data->getArrhythmiaPause();
+        //echo '<br>Arrhythmia of typing speed is '.$pause_arrhythmia.'<br>';
 
 
         // let's calculate arrhythmia of holding keys down
-        $press_max = max($data['sequenceHold']);
-        $m_press = array_sum($data['sequenceHold']) / ($press_max * count($data['sequenceHold']));
-        $temp = 0;
-        foreach($data['sequenceHold'] as $press) {
-            $temp += pow($press/$press_max - $m_press, 2);
-        }
-        $press_arrhythmia = sqrt($temp/(count($data['sequenceHold']) - 1));
-        echo '<br>Arrhythmia of pressing keys is '.$press_arrhythmia.'<br>';
+        $press_arrhythmia = $incoming_data->getArrhythmiaPress();
+        //echo '<br>Arrhythmia of pressing keys is '.$press_arrhythmia.'<br>';
 
 
         // typing speed
-        $speed = 900*$data['totalTime']/60000;
-        echo '<br>Speed = '.$speed.'<br>';
+        $speed = $incoming_data->getTypingSpeed();
+        //echo '<br>Speed = '.$speed.'<br>';
 
         // overlapping
-        $overlap_total = array_sum($data['overlapTime']);
-        $overlap_max = max($data['overlapTime']);
-        $overlap_average = $overlap_total / (count($data['overlapTime']) * $overlap_max);
-        $temp = 0;
-        foreach($data['overlapTime'] as $term) {
-            $temp += pow($term/$overlap_max - $overlap_average, 2);
-        }
-        $overlap_deviation = sqrt($temp / (count($data['overlapTime']) - 1));
+        $overlap_deviation = $incoming_data->getOverlapDeviation();
+        $overlap_average = $incoming_data->getParameter('overlap_average');
 
 
         // normalized chars
-        foreach($data['codeArray'] as $char) {
-            $chars_norm[] = ($char - 32) / 223;
-        }
+        $chars_norm = $incoming_data->getNormalizedChars();
 
 
         // Vector
-        $vector = array_merge(
-            $data['sequenceHold'], $data['sequenceBetween'], $chars_norm,
-            array($m_pause, $pause_arrhythmia, $m_press, $press_arrhythmia, $speed, $overlap_average, $overlap_deviation)
-        );
-        $vector_length = 3 * (count($data['codeArray']) - 2);
+        $vector = $incoming_data->getVector();
+        $vector_dimension = $incoming_data->getParameter('vector_dimension');
+        //echo '<br>Vector:<pre>'; print_r($vector); echo '</pre>';
+
+        // THIS IS NOT FINAL
+        $vectors = $incoming_data->getFakeVectorsVariety();
+        //echo '<br>Vectors<pre>'; print_r($vectors); echo '</pre><br>';
+
+
+        // let's calculate covariance matrix
+        $covariance = $incoming_data->getCovariance();
+        echo '<br>Covariance matrix<pre>'; print_r($covariance); echo '</pre><br>';
+
+
+        require 'matrix_class.php';
+        $matrix = new matrix;
+        $inverted_covariance = $matrix->invert($covariance, true);
+        echo '<br>Inverted covariance matrix<pre>'; print_r($inverted_covariance); echo '</pre><br>';
+
+
+        // Final formula
+        //$g_V = () / 2;
 
 
 
@@ -109,7 +105,7 @@ if (!empty($_POST['timeArrays'])) {
             }
         }
         $average_between_diff = round(array_sum($between_diff)*100 / count($between_diff), 2);
-        echo '<br>Mismatch count = '.$mismatch_count.'<br>';
+        //echo '<br>Mismatch count = '.$mismatch_count.'<br>';
         echo '<br>Average difference in "between" intervals = '.$average_between_diff.'%<br>';
 
 
@@ -147,14 +143,9 @@ if (!empty($_POST['timeArrays'])) {
 
     } else {
         // if no such user then add him
-        $sql_create_user = "INSERT INTO users (`email`) VALUES ('".$data['text']."')";
-        $result_create_user = $db->query($sql_create_user);
+        $user->addUser($incoming_data->getData('text'), $incoming_data->getParameter('json_encoded_data'));
 
-        // and add time data related to this user
-        $sql_create_time_data = "INSERT INTO `entries` (`user_id`, `signature_data`, `time_attempt`) VALUES ('".$db->get_insert_id()."', '".$_POST['timeArrays']."', '".date('Y-m-d h:i:s')."')";
-        $db->query($sql_create_time_data);
-
-        echo '<br>New user ('.$data['text'].') added to database.<br>';
+        echo '<br>New user ('.$incoming_data->getData('text').') added to database.<br>';
     }
 
 }
