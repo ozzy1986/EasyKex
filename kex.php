@@ -1,7 +1,8 @@
 <?php
-
 ini_set('display_errors', 'On');
 error_reporting(E_ALL);
+
+set_time_limit(300);
 
 require 'data_model.php';
 require 'user_model.php';
@@ -67,15 +68,32 @@ if (!empty($_POST['timeArrays'])) {
         //echo '<br>Vectors<pre>'; print_r($vectors); echo '</pre><br>';
 
 
-        // let's calculate covariance matrix
-        $covariance = $incoming_data->getCovariance();
-        echo '<br>Covariance matrix<pre>'; print_r($covariance); echo '</pre><br>';
 
 
         require 'matrix_class.php';
         $matrix = new matrix;
+
+        // let's calculate covariance matrix
+        $covariance = $incoming_data->getCovariance();
+        //echo '<br>Covariance matrix<pre>'; print_r($covariance); echo '</pre><br>';
+
+
+
+        $test_matrix = array(
+            array(38218331408.41, 65064726177.83, 46974411236.62, 54319427306.36, 41723946836.52, 28092241663.31, 215948697961.89),
+            array(65064726177.83, 110769320286.57, 79971497756.26, 92476006502.16, 71032854547.38, 47825583801.98, 367641453291.17),
+            array(46974411236.62,	79971497756.26,	57736568544.74,	66764377784.05,	51283187017.49,	34528365415.78,	265424014347.29),
+            array(54319427306.36,	92476006502.16,	66764377784.05,	77203793942.78,	59301932177.57,	39927292026.34,	306926262046.73),
+            array(41723946836.52,	71032854547.38,	51283187017.49,	59301932177.57,	45551118415.24,	30669031181.75,	235756812533.08),
+            array(28092241663.31,	47825583801.98,	34528365415.78,	39927292026.34,	30669031181.75,	20649097241.75,	158732283343.17),
+            array(215948697961.89,	367641453291.17, 265424014347.29, 306926262046.73, 235756812533.08, 158732283343.17, 1220195608570.71)
+        );
+        $inverted_covariance = $matrix->invert($test_matrix, true);
+        $matrix->print_matrix($inverted_covariance);
+
         $inverted_covariance = $matrix->invert($covariance, true);
-        echo '<br>Inverted covariance matrix<pre>'; print_r($inverted_covariance); echo '</pre><br>';
+        echo '<br>And this one is the real matrix<br>';
+        $matrix->print_matrix($inverted_covariance);
 
 
         // Final formula

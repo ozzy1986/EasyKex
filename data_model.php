@@ -146,10 +146,18 @@ class Data {
         $overlap_average = $this->overlap_average;
 
 
-        $vector = array_merge(
-            $this->data['sequenceHold'], $this->data['sequenceBetween'], $chars_norm,
-            array($m_pause, $pause_arrhythmia, $m_press, $press_arrhythmia, $speed, $overlap_average, $overlap_deviation)
-        );
+        if ($overlap_average > 0) {
+            $vector = array_merge(
+                $this->data['sequenceHold'], $this->data['sequenceBetween'], $chars_norm,
+                array($m_pause, $pause_arrhythmia, $m_press, $press_arrhythmia, $speed, $overlap_average, $overlap_deviation)
+            );
+        } else {
+            $vector = array_merge(
+                $this->data['sequenceHold'], $this->data['sequenceBetween'], $chars_norm,
+                array($m_pause, $pause_arrhythmia, $m_press, $press_arrhythmia, $speed)
+            );
+        }
+
         $vector_length = 3 * (count($this->data['codeArray']) - 2);
 
         $this->vector_dimension = count($vector);
@@ -206,6 +214,8 @@ class Data {
         for ($j=0; $j<$vector_dimension; $j++) {
             for ($k=0; $k<$vector_dimension; $k++) {
                 $covariance[$j][$k] = ( $sums[$j] / count($vectors)  -  pow($sums[$j], 2) / count($vectors) ) * ( $sums[$k] / count($vectors)  -  pow($sums[$k], 2) / count($vectors) );
+
+                //$covariance[$j][$k] = round($covariance[$j][$k]/10000, 2); // let's decrease numbers a bit
             }
         }
 
