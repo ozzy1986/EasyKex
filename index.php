@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>EasyKex 0.0.1</title>
+    <title>EasyKex 0.1.1</title>
 
     <link rel="icon" type="image/png" href="/img/easykex_favicon2.png">
 

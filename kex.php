@@ -18,6 +18,38 @@ if (!empty($_POST['timeArrays'])) {
     $between_diff = array();
     $hold_diff = array();
 
+    $student_005 = array(
+        2 => 6.31,
+        3 => 2.92,
+        4 => 2.35,
+        5 => 2.13,
+        6 => 2,02,
+        7 => 1.94,
+        8 => 1.90,
+        9 => 1.86,
+        10 => 1.83,
+        11 => 1.81,
+        12 => 1.80,
+        13 => 1.78,
+        14 => 1.77,
+        15 => 1.76,
+        16 => 1.75,
+        17 => 1.75,
+        18 => 1.74,
+        19 => 1.73,
+        20 => 1.73,
+        21 => 1.73,
+        22 => 1.72,
+        23 => 1.72,
+        24 => 1.71,
+        25 => 1.71,
+        26 => 1.71,
+        27 => 1.71,
+        28 => 1.70,
+        29 => 1.70,
+        30 => 1.70
+    );
+
     $incoming_data = new Data($_POST['timeArrays']);
 
     // check if such email already exists
@@ -78,26 +110,39 @@ if (!empty($_POST['timeArrays'])) {
         //echo '<br>Covariance matrix<pre>'; print_r($covariance); echo '</pre><br>';
 
 
+        $inverted_covariance = $matrix->invert($covariance);
+        //echo '<br>Inverted covariance matrix<br>'; $matrix->print_matrix($inverted_covariance);
 
-        $test_matrix = array(
-            array(38218331408.41, 65064726177.83, 46974411236.62, 54319427306.36, 41723946836.52, 28092241663.31, 215948697961.89),
-            array(65064726177.83, 110769320286.57, 79971497756.26, 92476006502.16, 71032854547.38, 47825583801.98, 367641453291.17),
-            array(46974411236.62,	79971497756.26,	57736568544.74,	66764377784.05,	51283187017.49,	34528365415.78,	265424014347.29),
-            array(54319427306.36,	92476006502.16,	66764377784.05,	77203793942.78,	59301932177.57,	39927292026.34,	306926262046.73),
-            array(41723946836.52,	71032854547.38,	51283187017.49,	59301932177.57,	45551118415.24,	30669031181.75,	235756812533.08),
-            array(28092241663.31,	47825583801.98,	34528365415.78,	39927292026.34,	30669031181.75,	20649097241.75,	158732283343.17),
-            array(215948697961.89,	367641453291.17, 265424014347.29, 306926262046.73, 235756812533.08, 158732283343.17, 1220195608570.71)
-        );
-        $inverted_covariance = $matrix->invert($test_matrix, true);
-        $matrix->print_matrix($inverted_covariance);
 
-        $inverted_covariance = $matrix->invert($covariance, true);
-        echo '<br>And this one is the real matrix<br>';
-        $matrix->print_matrix($inverted_covariance);
+        // get this specific sum
+        $vector_surface = 0;
+        $vector_variety_expectation = $incoming_data->getParameter('vector_variety_expectation');
+        for ($j=0; $j<$vector_dimension; $j++) {
+            for ($k=0; $k<$vector_dimension; $k++) {
+                $vector_surface += $inverted_covariance[$j][$k] * ($vector[$j] - $vector_variety_expectation[$j]) * ($vector[$k] - $vector_variety_expectation[$k]);
+            }
+        }
 
+        // number of trueth vectors
+        $vector_variety = $incoming_data->getParameter('vector_variety');
+        $number_of_vectors = count($vector_variety);
 
         // Final formula
-        //$g_V = () / 2;
+        $g_V = ($vector_surface) / 2 - pow($student_005[$number_of_vectors], 2);
+        echo '<br><br>So the final value is: '.$g_V.'<br><br>';
+
+
+        if ($g_V < 0 and $mismatch_count <= $mismatch_limit) {
+            // add keyboard data to this user
+            /*$sql_add_entry = "INSERT INTO `entries` (`user_id`, `signature_data`, `time_attempt`) VALUES ('".$user['id']."', '".$_POST['timeArrays']."', '".date('Y-m-d h:i:s')."')";
+            $db->query($sql_add_entry);*/
+
+            echo '<br><div style="font-size: 18px; color: darkgreen">You passed the authentication (vector logic)</div>';
+        } else {
+            echo '<br><div style="font-size: 18px; color: darkred">You failed the authentication (vector logic)</div>';
+        }
+
+
 
 
 
@@ -154,9 +199,9 @@ if (!empty($_POST['timeArrays'])) {
             /*$sql_add_entry = "INSERT INTO `entries` (`user_id`, `signature_data`, `time_attempt`) VALUES ('".$user['id']."', '".$_POST['timeArrays']."', '".date('Y-m-d h:i:s')."')";
             $db->query($sql_add_entry);*/
 
-            echo '<br><div style="font-size: 18px; color: darkgreen">You kinda passed the authentication</div>';
+            echo '<br><div style="font-size: 18px; color: darkgreen">You passed the authentication (simple logic)</div>';
         } else {
-            echo '<br><div style="font-size: 18px; color: darkred">You kinda failed the authentication</div>';
+            echo '<br><div style="font-size: 18px; color: darkred">You failed the authentication (simple logic)</div>';
         }
 
     } else {

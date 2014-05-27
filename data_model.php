@@ -16,6 +16,7 @@ class Data {
     protected $vector;
     protected $vector_dimension;
     protected $vector_variety;
+    protected $vector_variety_expectation;
     protected $covariance;
 
 
@@ -215,9 +216,11 @@ class Data {
             for ($k=0; $k<$vector_dimension; $k++) {
                 $covariance[$j][$k] = ( $sums[$j] / count($vectors)  -  pow($sums[$j], 2) / count($vectors) ) * ( $sums[$k] / count($vectors)  -  pow($sums[$k], 2) / count($vectors) );
 
-                //$covariance[$j][$k] = round($covariance[$j][$k]/10000, 2); // let's decrease numbers a bit
+                $covariance[$j][$k] = round($covariance[$j][$k], 4); // let's decrease numbers a bit
             }
         }
+
+        $this->vector_variety_expectation = $sums;
 
         $this->covariance = $covariance;
         return $covariance;
